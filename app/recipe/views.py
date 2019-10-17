@@ -1,6 +1,7 @@
 from rest_framework import viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 from core.models import Tag, Ingredient
 
@@ -33,3 +34,14 @@ class IngredientViewSet(BaseRecipeAttrViewSet):
     """Manage ingredients in the database"""
     queryset = Ingredient.objects.all()
     serializer_class = serializers.IngredientSerializer
+
+    def perform_create(self, serializer):
+        """Create a new ingredient object"""
+        exist = self.queryset.filter(name=self.request.data['name'],
+                                     user=self.request.user).exists()
+
+        if exist:
+            raise PermissionDenied(detail="Ingredient exist")
+
+        else:
+            serializer.save(user=self.request.user)

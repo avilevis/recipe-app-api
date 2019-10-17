@@ -75,6 +75,14 @@ class PrivateIngredientsAPITests(TestCase):
         ).exists()
         self.assertTrue(exists)
 
+    def test_duplicate_ingredient(self):
+        """Test duplicate ingredient fails"""
+        Ingredient.objects.create(user=self.user, name='Rhubarb')
+        payload = {'name': 'Rhubarb'}
+        res = self.client.post(INGREDIENTS_URL, payload)
+
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_create_ingredient_invalid(self):
         """Test creating invalid ingredient fails"""
         payload = {'name': ''}
